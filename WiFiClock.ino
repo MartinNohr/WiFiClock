@@ -153,9 +153,18 @@ void setup()
 	Heltec.display->clear();
 }
 
+int timeZone = -6;
+#define SECS_PER_HOUR 3600
 void loop()
 {
     timeClient.update();
+    time_t timenow = timeClient.getEpochTime() + timeZone * SECS_PER_HOUR;
+	struct tm* gtime;
+	gtime = gmtime(&timenow);
+	//Serial.println("year: " + String(gtime->tm_year + 1900));
+	//Serial.println("month: " + String(gtime->tm_mon + 1));
+	//Serial.println("day: " + String(gtime->tm_mday));
+	
 	//int touch = touchRead(TOUCH_PAD_NUM2_GPIO_NUM);
 	//Serial.println(String(touch));
 	//delay(1000);
@@ -169,9 +178,16 @@ void loop()
 	hour = hour % 12;
 	if (hour == 0)
 		hour = 12;
-    sprintf(line, "%2d:%02d:%02d %s", hour, timeClient.getMinutes(), timeClient.getSeconds(), ampm);
+	sprintf(line, "%2d:%02d:%02d", hour, timeClient.getMinutes(), timeClient.getSeconds());
 	Heltec.display->drawString(0, 0, line);
+	Heltec.display->setFont(ArialMT_Plain_10);
+	Heltec.display->drawString(100, 0, ampm);
+	Heltec.display->setFont(ArialMT_Plain_16);
+    sprintf(line, "%d/%d/%4d", gtime->tm_mon + 1, gtime->tm_mday, gtime->tm_year + 1900);
+	Heltec.display->drawString(0, 25, line);
+	Heltec.display->setFont(ArialMT_Plain_10);
+	Heltec.display->drawString(0, 45, daysOfTheWeek[timeClient.getDay()]);
 	Heltec.display->display();
-    Serial.println(timeClient.getFormattedTime());
+    //Serial.println(timeClient.getFormattedTime());
 	delay(1000);
 }
