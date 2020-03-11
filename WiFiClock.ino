@@ -1,23 +1,5 @@
 /*
- * HelTec Automation(TM) WIFI_Kit_32 factory test code, witch includ
- * follow functions:
- *
- * - Basic OLED function test;
- *
- * - Basic serial port test(in baud rate 115200);
- *
- * - LED blink test;
- *
- * - WIFI join and scan test;
- *
- * - Timer test and some other Arduino basic functions.
- *
- * by Aaron.Lee from HelTec AutoMation, ChengDu, China
- * ??????????????
- * www.heltec.cn
- *
- * this project also realess in GitHub:
- * https://github.com/HelTecAutomation/Heltec_ESP32
+ Martin Nohr test programs for clock and weather
 */
 
 #include <NTPClient.h>
@@ -158,7 +140,7 @@ int timeZone = -6;
 void loop()
 {
     timeClient.update();
-    time_t timenow = timeClient.getEpochTime() + timeZone * SECS_PER_HOUR;
+    time_t timenow = timeClient.getEpochTime();
 	struct tm* gtime;
 	gtime = gmtime(&timenow);
 	//Serial.println("year: " + String(gtime->tm_year + 1900));
