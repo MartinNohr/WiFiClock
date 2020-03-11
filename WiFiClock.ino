@@ -155,12 +155,12 @@ void loop()
 	Heltec.display->clear();
 	Heltec.display->setFont(ArialMT_Plain_24);
 	char line[50];
-	int hour = timeClient.getHours();
+	int hour = gtime->tm_hour;
 	const char* ampm = (hour < 13 ? "AM" : "PM");
 	hour = hour % 12;
 	if (hour == 0)
 		hour = 12;
-	sprintf(line, "%2d:%02d:%02d", hour, timeClient.getMinutes(), timeClient.getSeconds());
+	sprintf(line, "%2d:%02d:%02d", hour, gtime->tm_min, gtime->tm_sec);
 	Heltec.display->drawString(0, 0, line);
 	Heltec.display->setFont(ArialMT_Plain_10);
 	Heltec.display->drawString(100, 0, ampm);
@@ -168,7 +168,7 @@ void loop()
     sprintf(line, "%d/%d/%4d", gtime->tm_mon + 1, gtime->tm_mday, gtime->tm_year + 1900);
 	Heltec.display->drawString(0, 25, line);
 	Heltec.display->setFont(ArialMT_Plain_10);
-	Heltec.display->drawString(0, 45, daysOfTheWeek[timeClient.getDay()]);
+	Heltec.display->drawString(0, 45, daysOfTheWeek[gtime->tm_wday]);
 	Heltec.display->display();
     //Serial.println(timeClient.getFormattedTime());
 	delay(1000);
