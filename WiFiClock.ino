@@ -350,8 +350,9 @@ void loop()
 		Heltec.display->display();
 		//Serial.println(timeClient.getFormattedTime());
 	}
-	digitalWrite(17, HIGH);
-	delay(5);
-	digitalWrite(17, LOW);
-	delay(10);
+	delay(1000);
+	//digitalWrite(17, HIGH);
+	//delay(5);
+	//digitalWrite(17, LOW);
+	//delay(10);
 }
