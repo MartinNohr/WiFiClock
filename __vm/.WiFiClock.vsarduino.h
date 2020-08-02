@@ -17,10 +17,8 @@
 #define __ESP32_ESP32__
 #define ESP_PLATFORM
 #define HAVE_CONFIG_H
-#define GCC_NOT_5_2_0 0
-#define WITH_POSIX
 #define F_CPU 240000000L
-#define ARDUINO 108010
+#define ARDUINO 108013
 #define ARDUINO_WIFI_KIT_32
 #define ARDUINO_ARCH_ESP32
 #define ESP32
@@ -94,17 +92,10 @@ typedef long pthread_cond_t;
 #include "arduino.h"
 #include <pins_arduino.h> 
 
-//#include "..\generic\Common.h"
-//#include "..\generic\pins_arduino.h"
-
-//#undef F
-//#define F(string_literal) ((const PROGMEM char *)(string_literal))
-//#undef PSTR
-//#define PSTR(string_literal) ((const PROGMEM char *)(string_literal))
-//current vc++ does not understand this syntax so use older arduino example for intellisense
-//todo:move to the new clang/gcc project types.
 #define interrupts() sei()
 #define noInterrupts() cli()
+
+#define ESP_LOGI(tag, ...)
 
 #include "WiFiClock.ino"
 #endif
