@@ -64,8 +64,8 @@ void IRAM_ATTR IntBtnCenter()
 #define CONTACTS 2
 bool stateTest[DIRECTIONS][MAXSTATE][CONTACTS] =
 {
-	{{T,F},{F,F},{F,T},{F,F}},
-	{{T,F},{F,F},{F,T},{F,F}}
+	{{T,F},{F,F},{F,T},{T,T}},
+	{{F,T},{F,F},{T,F},{T,T}}
 };
 #define A 0
 #define B 1
@@ -76,24 +76,29 @@ void IRAM_ATTR IntBtnAB()
 	noInterrupts();
 	bool valA = digitalRead(BTNA);
 	bool valB = digitalRead(BTNB);
+	Serial.println("A:" + String(valA) + " B:" + String(valB));
+	Serial.println("state: " + String(state));
 	if (state == 0) {
 		// starting
 		// see if one of the first tests is correct, then go to state 1
 		if (stateTest[0][state][A] == valA && stateTest[0][state][B] == valB) {
+			Serial.println("up");
 			forward = true;
 			++state;
 		}
-		else if (stateTest[0][state][A] == valB && stateTest[0][state][B] == valA) {
+		else if (stateTest[1][state][A] == valA && stateTest[1][state][B] == valB) {
+			Serial.println("down");
 			forward = false;
 			++state;
 		}
 	}
 	else {
 		// check if we can advance
-		if (stateTest[forward ? 1 : 0][state][A] == valA && stateTest[0][state][B] == valB) {
+		if (stateTest[forward ? 1 : 0][state][A] == valA && stateTest[forward ? 1 : 0][state][B] == valB) {
 			++state;
 		}
 	}
+	Serial.println("end state: " + String(state));
 	if (state == MAXSTATE) {
 		// we're done
 		Serial.println(String("rotary: ") + forward ? "forward" : "reverse");
@@ -212,7 +217,7 @@ void setup()
 		out["humidity"] = dht.readHumidity();
 		out["temperature"] = dht.readTemperature(true);
 	};
-
+	thing["led"] << digitalPin(LED);
 	Heltec.begin(true /*DisplayEnable Enable*/, false /*LoRa Enable*/, true /*Serial Enable*/);
 
 	WIFISetUp();
