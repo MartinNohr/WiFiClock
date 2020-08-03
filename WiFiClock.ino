@@ -270,10 +270,10 @@ void loop()
 	sprintf(line, "%2d:%02d", hour, gtime->tm_min);
 	OLED->drawString(0, 0, line);
 	OLED->setFont(ArialMT_Plain_10);
-	OLED->drawString(54, 0, ampm);
+	OLED->drawString(58, 0, ampm);
 	OLED->setFont(ArialMT_Plain_16);
 	sprintf(line, "%d/%d/%2d", gtime->tm_mon + 1, gtime->tm_mday, (gtime->tm_year + 1900) % 100);
-	OLED->drawString(72, 8, line);
+	OLED->drawString(74, 8, line);
 	OLED->setFont(ArialMT_Plain_16);
 	//OLED->drawString(0, 45, daysOfTheWeek[gtime->tm_wday]);
 	float hum = dht.readHumidity();
