@@ -73,6 +73,7 @@ void IRAM_ATTR IntBtnAB()
 {
 	static bool forward;
 	static int state = 0;
+	static int tries;
 	noInterrupts();
 	bool valA = digitalRead(BTNA);
 	bool valB = digitalRead(BTNB);
@@ -85,17 +86,20 @@ void IRAM_ATTR IntBtnAB()
 		if (stateTest[0][state][A] == valA && stateTest[0][state][B] == valB) {
 			//Serial.println("down");
 			forward = false;
+			tries = 50;
 			++state;
 		}
 		else if (stateTest[1][state][A] == valA && stateTest[1][state][B] == valB) {
 			//Serial.println("up");
 			forward = true;
+			tries = 50;
 			++state;
 		}
 	}
 	else {
 		// check if we can advance
 		if (stateTest[forward ? 1 : 0][state][A] == valA && stateTest[forward ? 1 : 0][state][B] == valB) {
+			tries = 50;
 			++state;
 		}
 	}
@@ -103,10 +107,10 @@ void IRAM_ATTR IntBtnAB()
 	//Serial.println("forward: " + String(forward));
 	if (state == MAXSTATE) {
 		// we're done
-		Serial.println(String("rotary: ") + (forward ? "forward" : "reverse"));
+		Serial.println(String(forward ? "+" : "-"));
 		state = 0;
 	}
-	else if (state > 0 && valA == true && valB == true) {
+	else if (tries-- <= 0 && state > 0 && valA == true && valB == true) {
 		// something failed, start over
 		Serial.println("failed");
 		state = 0;
