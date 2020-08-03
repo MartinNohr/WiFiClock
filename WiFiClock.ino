@@ -26,7 +26,7 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds, 3600);
 #define BTNA 33
 #define BTNB 32
 
-#define LED 2
+#define LED 25
 
 int buttons;
 DHT dht(DHTPIN, DHT22);
@@ -44,12 +44,12 @@ void IRAM_ATTR IntBtnCenter()
 				Serial.println("long press");
 			}
 			else {
-				Serial.println("high");
+				Serial.println("press");
 			}
 		}
-		else {
-			Serial.println("low");
-		}
+		//else {
+		//	Serial.println("press");
+		//}
 		// got one, note time so we can ignore until ready again
 		pressedTime = currentTime;
 	}
@@ -76,19 +76,20 @@ void IRAM_ATTR IntBtnAB()
 	noInterrupts();
 	bool valA = digitalRead(BTNA);
 	bool valB = digitalRead(BTNB);
-	Serial.println("A:" + String(valA) + " B:" + String(valB));
-	Serial.println("state: " + String(state));
+	//Serial.println("A:" + String(valA) + " B:" + String(valB));
+	//Serial.println("start state: " + String(state));
+	//Serial.println("forward: " + String(forward));
 	if (state == 0) {
 		// starting
 		// see if one of the first tests is correct, then go to state 1
 		if (stateTest[0][state][A] == valA && stateTest[0][state][B] == valB) {
-			Serial.println("up");
-			forward = true;
+			//Serial.println("down");
+			forward = false;
 			++state;
 		}
 		else if (stateTest[1][state][A] == valA && stateTest[1][state][B] == valB) {
-			Serial.println("down");
-			forward = false;
+			//Serial.println("up");
+			forward = true;
 			++state;
 		}
 	}
@@ -98,10 +99,16 @@ void IRAM_ATTR IntBtnAB()
 			++state;
 		}
 	}
-	Serial.println("end state: " + String(state));
+	//Serial.println("end state: " + String(state));
+	//Serial.println("forward: " + String(forward));
 	if (state == MAXSTATE) {
 		// we're done
-		Serial.println(String("rotary: ") + forward ? "forward" : "reverse");
+		Serial.println(String("rotary: ") + (forward ? "forward" : "reverse"));
+		state = 0;
+	}
+	else if (state > 0 && valA == true && valB == true) {
+		// something failed, start over
+		Serial.println("failed");
 		state = 0;
 	}
 	interrupts();
@@ -235,8 +242,8 @@ int timeZone = -6;
 #define SECS_PER_HOUR 3600
 void loop()
 {
-    timeClient.update();
-    time_t timenow = timeClient.getEpochTime();
+	timeClient.update();
+	time_t timenow = timeClient.getEpochTime();
 	struct tm* gtime;
 	gtime = gmtime(&timenow);
 	//Serial.println("year: " + String(gtime->tm_year + 1900));
@@ -270,13 +277,13 @@ void loop()
 	float ctemp = dht.convertFtoC(temp);
 	sprintf(line, "%dF  %0.1fC   %d%%", (int)(temp + 0.5), ctemp, (int)(hum + 0.5));
 	OLED->drawString(0, 45, line);
-#define PSCALE 5
+#define PSCALE 50
 	for (int x = 0; x <= PSCALE; ++x) {
 		OLED->drawProgressBar(0, 33, 120, 6, x * 100 / PSCALE);
 		OLED->display();
-		delay(1000);
+		thing.handle();
+		delay(100);
 	}
-	thing.handle();
 	//Serial.println(timeClient.getFormattedTime());
 	//digitalWrite(LED, HIGH);   // turn the LED on (HIGH is the voltage level)
 	//delay(2000);              // wait for a second
