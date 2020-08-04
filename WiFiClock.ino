@@ -4,8 +4,9 @@
 
 #include <NTPClient.h>
 
-#include "heltec.h"
-#include "WiFi.h"
+#include <heltec.h>
+#include <WiFi.h>
+#include <ringbufcpp.h>
 
 #define OLED Heltec.display
 
@@ -30,7 +31,12 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds, 3600);
 
 int buttons;
 DHT dht(DHTPIN, DHT22);
+#define MAX_KEY_BUF 10
+RingBufCPP<int, MAX_KEY_BUF> btnBuf;
+enum BUTTONS { BTN_UP, BTN_DOWN, BTN_SELECT, BTN_LONG, BTN_NONE };
+
 ThingerESP32 thing("MartinNohr", "TempHum", "zHIyT&vMRt!d");
+
 // interrupt handlers
 void IRAM_ATTR IntBtnCenter()
 {
@@ -38,13 +44,18 @@ void IRAM_ATTR IntBtnCenter()
 	noInterrupts();
 	bool val = digitalRead(BTNPUSH);
 	unsigned long currentTime = millis();
+	int btn;
 	if (currentTime > pressedTime + 50) {
 		if (val == true) {
 			if (currentTime > pressedTime + 750) {
-				Serial.println("long press");
+				btn = BTN_LONG;
+				btnBuf.add(btn);
+				//Serial.println("long press");
 			}
 			else {
-				Serial.println("press");
+				btn = BTN_SELECT;
+				btnBuf.add(btn);
+				//Serial.println("press");
 			}
 		}
 		//else {
@@ -107,12 +118,16 @@ void IRAM_ATTR IntBtnAB()
 	//Serial.println("forward: " + String(forward));
 	if (state == MAXSTATE) {
 		// we're done
-		Serial.println(String(forward ? "+" : "-"));
+		//Serial.println(String(forward ? "+" : "-"));
 		state = 0;
+		int btn = forward ? BTN_UP : BTN_DOWN;
+		btnBuf.add(btn);
 	}
 	else if (tries-- <= 0 && state > 0 && valA == true && valB == true) {
 		// something failed, start over
-		Serial.println("failed");
+		//Serial.println("failed");
+		int btn = BTN_NONE;
+		btnBuf.add(btn);
 		state = 0;
 	}
 	interrupts();
@@ -287,6 +302,14 @@ void loop()
 		OLED->display();
 		thing.handle();
 		delay(100);
+	}
+	if (!btnBuf.isEmpty()) {
+		Serial.println("buttons");
+		while (!btnBuf.isEmpty()) {
+			int btn;
+			btnBuf.pull(&btn);
+			Serial.println(String(btn));
+		}
 	}
 	//Serial.println(timeClient.getFormattedTime());
 	//digitalWrite(LED, HIGH);   // turn the LED on (HIGH is the voltage level)
