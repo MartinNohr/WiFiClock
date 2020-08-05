@@ -297,17 +297,20 @@ void loop()
 	float ctemp = dht.convertFtoC(temp);
 	sprintf(line, "%dF  %0.1fC   %d%%", (int)(temp + 0.5), ctemp, (int)(hum + 0.5));
 	OLED->drawString(0, 45, line);
-	static int progscale = 50;
-	OLED->drawString(80, 28, String(progscale));
-	for (int x = 0; x <= progscale; ++x) {
+	static int waitTime = 100;
+	static int waitIncrement = 10;
+	OLED->drawString(80, 28, String(waitTime));
+	for (int x = 0; x <= 10; ++x) {
 		if (showProgress) {
-			OLED->drawProgressBar(0, 33, 60, 6, x * 100 / progscale);
+			OLED->drawProgressBar(0, 33, 60, 6, x * 10);
 			OLED->display();
 		}
 		thing.handle();
-		if (!btnBuf.isEmpty())
-			break;
-		delay(5000 / progscale);
+		for (int ix = 0; ix < waitTime; ++ix) {
+			if (!btnBuf.isEmpty())
+				break;
+			delay(1);
+		}
 	}
 	while (!btnBuf.isEmpty()) {
 		int btn;
@@ -323,13 +326,20 @@ void loop()
 				OLED->setColor(oldColor);
 				OLED->display();
 			}
+			break;
 		case BTN_UP:
 		case BTN_DOWN:
 			if (btn == BTN_UP)
-				progscale += 100;
+				waitTime += waitIncrement;
 			else
-				progscale -= 100;
-			progscale = constrain(progscale, 100, 10000);
+				waitTime -= waitIncrement;
+			waitTime = constrain(waitTime, 0, 10000);
+			break;
+		case BTN_LONG:
+			if (waitIncrement == 10)
+				waitIncrement = 100;
+			else
+				waitIncrement = 10;
 			break;
 		}
 	}
