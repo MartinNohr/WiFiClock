@@ -259,6 +259,7 @@ void setup()
 
 int timeZone = -6;
 #define SECS_PER_HOUR 3600
+bool showProgress = true;
 void loop()
 {
 	timeClient.update();
@@ -296,19 +297,40 @@ void loop()
 	float ctemp = dht.convertFtoC(temp);
 	sprintf(line, "%dF  %0.1fC   %d%%", (int)(temp + 0.5), ctemp, (int)(hum + 0.5));
 	OLED->drawString(0, 45, line);
-#define PSCALE 50
-	for (int x = 0; x <= PSCALE; ++x) {
-		OLED->drawProgressBar(0, 33, 120, 6, x * 100 / PSCALE);
-		OLED->display();
+	static int progscale = 50;
+	OLED->drawString(80, 28, String(progscale));
+	for (int x = 0; x <= progscale; ++x) {
+		if (showProgress) {
+			OLED->drawProgressBar(0, 33, 60, 6, x * 100 / progscale);
+			OLED->display();
+		}
 		thing.handle();
-		delay(100);
+		if (!btnBuf.isEmpty())
+			break;
+		delay(5000 / progscale);
 	}
-	if (!btnBuf.isEmpty()) {
-		Serial.println("buttons");
-		while (!btnBuf.isEmpty()) {
-			int btn;
-			btnBuf.pull(&btn);
-			Serial.println(String(btn));
+	while (!btnBuf.isEmpty()) {
+		int btn;
+		btnBuf.pull(&btn);
+		Serial.println("button: " + String(btn));
+		switch (btn) {
+		case BTN_SELECT:
+			showProgress = !showProgress;
+			if (!showProgress) {
+				OLEDDISPLAY_COLOR oldColor = OLED->getColor();
+				OLED->setColor(BLACK);
+				OLED->fillRect(0, 30, 61, 12);
+				OLED->setColor(oldColor);
+				OLED->display();
+			}
+		case BTN_UP:
+		case BTN_DOWN:
+			if (btn == BTN_UP)
+				progscale += 100;
+			else
+				progscale -= 100;
+			progscale = constrain(progscale, 100, 10000);
+			break;
 		}
 	}
 	//Serial.println(timeClient.getFormattedTime());
