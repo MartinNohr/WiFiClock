@@ -118,6 +118,9 @@ void IRAM_ATTR IntBtnAB()
 			tries = ROTARY_RETRIES;
 			++state;
 		}
+		else {
+			//state = 0;
+		}
 	}
 	//Serial.println("end state: " + String(state));
 	//Serial.println("forward: " + String(forward));
@@ -128,7 +131,7 @@ void IRAM_ATTR IntBtnAB()
 		int btn = forward ? BTN_UP : BTN_DOWN;
 		btnBuf.add(btn);
 	}
-	else if (tries-- <= 0 && state > 0 && valA == true && valB == true) {
+	else if ((tries-- <= 0 && state > 0) || (valA == true && valB == true)) {
 		// something failed, start over
 		//Serial.println("failed");
 		//int btn = BTN_NONE;
