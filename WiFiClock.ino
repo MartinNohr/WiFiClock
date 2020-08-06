@@ -45,7 +45,7 @@ void IRAM_ATTR IntBtnCenter()
 	bool val = digitalRead(BTNPUSH);
 	unsigned long currentTime = millis();
 	int btn;
-	if (currentTime > pressedTime + 50) {
+	if (currentTime > pressedTime + 20) {
 		if (val == true) {
 			if (currentTime > pressedTime + 750) {
 				btn = BTN_LONG;
@@ -80,37 +80,42 @@ bool stateTest[DIRECTIONS][MAXSTATE][CONTACTS] =
 };
 #define A 0
 #define B 1
+#define ROTARY_RETRIES 10
 void IRAM_ATTR IntBtnAB()
 {
 	static bool forward;
 	static int state = 0;
 	static int tries;
+	static bool lastValA = true;
+	static bool lastValB = true;
 	noInterrupts();
 	bool valA = digitalRead(BTNA);
 	bool valB = digitalRead(BTNB);
 	//Serial.println("A:" + String(valA) + " B:" + String(valB));
 	//Serial.println("start state: " + String(state));
 	//Serial.println("forward: " + String(forward));
+	if (valA == lastValA && valB == lastValB)
+		return;
 	if (state == 0) {
 		// starting
 		// see if one of the first tests is correct, then go to state 1
 		if (stateTest[0][state][A] == valA && stateTest[0][state][B] == valB) {
 			//Serial.println("down");
 			forward = false;
-			tries = 50;
+			tries = ROTARY_RETRIES;
 			++state;
 		}
 		else if (stateTest[1][state][A] == valA && stateTest[1][state][B] == valB) {
 			//Serial.println("up");
 			forward = true;
-			tries = 50;
+			tries = ROTARY_RETRIES;
 			++state;
 		}
 	}
 	else {
 		// check if we can advance
 		if (stateTest[forward ? 1 : 0][state][A] == valA && stateTest[forward ? 1 : 0][state][B] == valB) {
-			tries = 50;
+			tries = ROTARY_RETRIES;
 			++state;
 		}
 	}
@@ -126,10 +131,12 @@ void IRAM_ATTR IntBtnAB()
 	else if (tries-- <= 0 && state > 0 && valA == true && valB == true) {
 		// something failed, start over
 		//Serial.println("failed");
-		int btn = BTN_NONE;
-		btnBuf.add(btn);
+		//int btn = BTN_NONE;
+		//btnBuf.add(btn);
 		state = 0;
 	}
+	lastValA = valA;
+	lastValB = valB;
 	interrupts();
 }
 
@@ -234,9 +241,9 @@ void setup()
 	pinMode(BTNA, INPUT_PULLUP);
 	pinMode(BTNB, INPUT_PULLUP);
 	pinMode(DHTPIN, INPUT_PULLUP);
-	attachInterrupt(digitalPinToInterrupt(BTNPUSH), IntBtnCenter, CHANGE);
-	attachInterrupt(digitalPinToInterrupt(BTNA), IntBtnAB, CHANGE);
-	attachInterrupt(digitalPinToInterrupt(BTNB), IntBtnAB, CHANGE);
+	attachInterrupt(BTNPUSH, IntBtnCenter, CHANGE);
+	attachInterrupt(BTNA, IntBtnAB, CHANGE);
+	attachInterrupt(BTNB, IntBtnAB, CHANGE);
 	dht.begin();
 	thing.add_wifi("NohrNet", "8017078120");
 	thing["dht22"] >> [](pson& out) {
@@ -299,10 +306,10 @@ void loop()
 	OLED->drawString(0, 45, line);
 	static int waitTime = 100;
 	static int waitIncrement = 10;
-	OLED->drawString(80, 28, String(waitTime));
+	OLED->drawString(25, 28, String(waitTime) + " +/-" + String(waitIncrement));
 	for (int x = 0; x <= 10; ++x) {
 		if (showProgress) {
-			OLED->drawProgressBar(0, 33, 60, 6, x * 10);
+			OLED->drawProgressBar(0, 33, 20, 6, x * 10);
 			OLED->display();
 		}
 		thing.handle();
@@ -315,14 +322,14 @@ void loop()
 	while (!btnBuf.isEmpty()) {
 		int btn;
 		btnBuf.pull(&btn);
-		Serial.println("button: " + String(btn));
+		//Serial.println("button: " + String(btn));
 		switch (btn) {
 		case BTN_SELECT:
 			showProgress = !showProgress;
 			if (!showProgress) {
 				OLEDDISPLAY_COLOR oldColor = OLED->getColor();
 				OLED->setColor(BLACK);
-				OLED->fillRect(0, 30, 61, 12);
+				OLED->fillRect(0, 30, 21, 12);
 				OLED->setColor(oldColor);
 				OLED->display();
 			}
