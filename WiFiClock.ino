@@ -21,11 +21,11 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds, 3600);
 
 #include <ThingerESP32.h>
 
-#define DHTPIN 14
+#define DHTPIN 32
 // rotary switch
 #define BTNPUSH 27
-#define BTNA 33
-#define BTNB 32
+#define BTNA 12
+#define BTNB 14
 
 #define LED 25
 
