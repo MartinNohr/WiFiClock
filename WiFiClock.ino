@@ -269,7 +269,7 @@ void setup()
 
 int timeZone = -6;
 #define SECS_PER_HOUR 3600
-bool showProgress = true;
+bool showProgress = false;
 void loop()
 {
 	timeClient.update();
@@ -307,9 +307,10 @@ void loop()
 	float ctemp = dht.convertFtoC(temp);
 	sprintf(line, "%dF  %0.1fC   %d%%", (int)(temp + 0.5), ctemp, (int)(hum + 0.5));
 	OLED->drawString(0, 45, line);
+	OLED->display();
 	static int waitTime = 100;
 	static int waitIncrement = 10;
-	OLED->drawString(25, 28, String(waitTime) + " +/-" + String(waitIncrement));
+	//OLED->drawString(25, 28, String(waitTime) + " +/-" + String(waitIncrement));
 	for (int x = 0; x <= 10; ++x) {
 		if (showProgress) {
 			OLED->drawProgressBar(0, 33, 20, 6, x * 10);
