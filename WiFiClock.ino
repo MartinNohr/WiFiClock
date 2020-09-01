@@ -241,10 +241,11 @@ void setup()
 	Serial.begin(115200);
 	pinMode(LED, OUTPUT);
 	digitalWrite(LED, HIGH);
-	pinMode(BTNPUSH, INPUT_PULLUP);
-	pinMode(BTNA, INPUT_PULLUP);
-	pinMode(BTNB, INPUT_PULLUP);
-	pinMode(DHTPIN, INPUT_PULLUP);
+	gpio_set_pull_mode((gpio_num_t)BTNPUSH, GPIO_PULLUP_ONLY);
+	gpio_set_pull_mode((gpio_num_t)BTNA, GPIO_PULLUP_ONLY);
+	gpio_set_pull_mode((gpio_num_t)BTNB, GPIO_PULLUP_ONLY);
+	gpio_set_pull_mode((gpio_num_t)DHTPIN, GPIO_PULLUP_ONLY);
+	//pinMode(DHTPIN, INPUT_PULLUP);
 	attachInterrupt(BTNPUSH, IntBtnCenter, CHANGE);
 	attachInterrupt(BTNA, IntBtnAB, CHANGE);
 	attachInterrupt(BTNB, IntBtnAB, CHANGE);
