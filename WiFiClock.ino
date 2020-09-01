@@ -238,6 +238,7 @@ void WIFIScan(void)
 
 void setup()
 {
+	Serial.begin(115200);
 	pinMode(LED, OUTPUT);
 	digitalWrite(LED, HIGH);
 	pinMode(BTNPUSH, INPUT_PULLUP);
@@ -303,9 +304,13 @@ void loop()
 	OLED->setFont(ArialMT_Plain_16);
 	//OLED->drawString(0, 45, daysOfTheWeek[gtime->tm_wday]);
 	float hum = dht.readHumidity();
-	float temp = dht.readTemperature(true);
-	float ctemp = dht.convertFtoC(temp);
-	sprintf(line, "%dF  %0.1fC   %d%%", (int)(temp + 0.5), ctemp, (int)(hum + 0.5));
+	if (hum > 0 && hum < 100) {
+		float temp = dht.readTemperature(true);
+		float ctemp = dht.convertFtoC(temp);
+		sprintf(line, "%dF  %0.1fC   %d%%", (int)(temp + 0.5), ctemp, (int)(hum + 0.5));
+	}
+	else
+		sprintf(line, "no temp sensor");
 	OLED->drawString(0, 45, line);
 	OLED->display();
 	static int waitTime = 100;
