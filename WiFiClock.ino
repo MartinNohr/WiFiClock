@@ -39,6 +39,14 @@ enum BUTTONS { BTN_UP, BTN_DOWN, BTN_SELECT, BTN_LONG, BTN_NONE };
 
 ThingerESP32 thing("MartinNohr", "TempHum", "zHIyT&vMRt!d");
 
+//struct abc {
+//	int x;
+//	union  {
+//		int one;
+//		byte two;
+//	} which;
+//} myvalue = { 5, .which = {.two = 2 } };
+
 // interrupt handlers
 void IRAM_ATTR IntBtnCenter()
 {
