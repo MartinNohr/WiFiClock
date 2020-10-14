@@ -301,7 +301,7 @@ void loop()
 	OLED->setFont(ArialMT_Plain_24);
 	char line[50];
 	int hour = gtime->tm_hour;
-	const char* ampm = (hour < 13 ? "AM" : "PM");
+	const char* ampm = (hour < 12 ? "AM" : "PM");
 	hour = hour % 12;
 	if (hour == 0)
 		hour = 12;
@@ -311,7 +311,7 @@ void loop()
 	OLED->drawString(58, 0, ampm);
 	OLED->setFont(ArialMT_Plain_16);
 	sprintf(line, "%d/%d/%2d", gtime->tm_mon + 1, gtime->tm_mday, (gtime->tm_year + 1900) % 100);
-	OLED->drawString(74, 8, line);
+	OLED->drawString(66, 10, line);
 	OLED->setFont(ArialMT_Plain_16);
 	//OLED->drawString(0, 45, daysOfTheWeek[gtime->tm_wday]);
 	float hum = dht.readHumidity();
