@@ -21,7 +21,7 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds, 3600);
 
 #include "DHT.h"
 
-#include <ThingerESP32.h>
+//#include <ThingerESP32.h>
 
 #define DHTPIN 32
 // rotary switch
@@ -37,7 +37,7 @@ DHT dht(DHTPIN, DHT22);
 RingBufCPP<int, MAX_KEY_BUF> btnBuf;
 enum BUTTONS { BTN_UP, BTN_DOWN, BTN_SELECT, BTN_LONG, BTN_NONE };
 
-ThingerESP32 thing("MartinNohr", "TempHum", "zHIyT&vMRt!d");
+//ThingerESP32 thing("MartinNohr", "TempHum", "zHIyT&vMRt!d");
 
 //struct abc {
 //	int x;
@@ -165,11 +165,14 @@ void WIFISetUp(void)
 
 	byte count = 0;
 	OLED->clear();
-	while (WiFi.status() != WL_CONNECTED && count < 10)
+	while (WiFi.status() != WL_CONNECTED && count < 50)
 	{
+		char line[50];
 		count++;
 		delay(500);
-		OLED->drawString(0, 0, "Connecting...");
+		sprintf(line, "Connecting try: %d", count);
+		OLED->clear();
+		OLED->drawString(0, 0, line);
 		OLED->display();
 	}
 
@@ -178,7 +181,7 @@ void WIFISetUp(void)
 	{
 		OLED->drawString(0, 0, "Connecting...OK.");
 		OLED->display();
-		//		delay(500);
+		delay(500);
 	}
 	else
 	{
@@ -260,16 +263,16 @@ void setup()
 	attachInterrupt(BTNA, IntBtnAB, CHANGE);
 	attachInterrupt(BTNB, IntBtnAB, CHANGE);
 	dht.begin();
-	thing.add_wifi("NohrNet", "8017078120");
-	thing["dht22"] >> [](pson& out) {
-		out["humidity"] = dht.readHumidity();
-		out["temperature"] = dht.readTemperature(true);
-	};
-	thing["led"] << digitalPin(LED);
+	//thing.add_wifi("NohrNet", "8017078120");
+	//thing["dht22"] >> [](pson& out) {
+	//	out["humidity"] = dht.readHumidity();
+	//	out["temperature"] = dht.readTemperature(true);
+	//};
+	//thing["led"] << digitalPin(LED);
 	Heltec.begin(true /*DisplayEnable Enable*/, false /*LoRa Enable*/, true /*Serial Enable*/);
 
+	WIFIScan();
 	WIFISetUp();
-	//WIFIScan();
 	digitalWrite(LED, LOW);
 	Serial.println("WiFi connected");
 	Serial.println("IP address: ");
@@ -279,7 +282,7 @@ void setup()
 	pinMode(17, OUTPUT);
 }
 
-int timeZone = -6;
+int timeZone = -7;
 #define SECS_PER_HOUR 3600
 bool showProgress = false;
 void loop()
@@ -332,7 +335,7 @@ void loop()
 			OLED->drawProgressBar(0, 33, 20, 6, x * 10);
 			OLED->display();
 		}
-		thing.handle();
+		//thing.handle();
 		for (int ix = 0; ix < waitTime; ++ix) {
 			if (!btnBuf.isEmpty())
 				break;
